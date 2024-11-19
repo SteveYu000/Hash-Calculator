@@ -48,7 +48,7 @@ def copy_to_clipboard(item_id, column_id=None):
         root.clipboard_clear()
         root.clipboard_append(item_value)
         root.update()
-
+        show_success_popup()
 
 def on_select(event):
     region = tree.identify_region(event.x, event.y)
@@ -65,6 +65,7 @@ def on_select(event):
             root.clipboard_clear()
             root.clipboard_append(item_value)
             root.update()
+            show_success_popup()
 
 def on_copy(event):
     try:
@@ -76,12 +77,32 @@ def on_copy(event):
             root.clipboard_clear()
             root.clipboard_append(item_value)
             root.update()
+            show_success_popup()
     except Exception as e:
         print(e)
+
+def show_success_popup():
+    global popup
+    popup = tk.Toplevel(root)
+    popup.title("Success")
+    popup.geometry(f"+{root.winfo_x() + root.winfo_width() // 2 - 75}+{root.winfo_y() + root.winfo_height() // 2 - 25}")
+    popup.overrideredirect(True)  # Remove window decorations
+    popup.attributes('-alpha', 0.9)  # Set transparency
+
+    frame = tk.Frame(popup, bg="#d4edda", bd=1, relief="solid", highlightbackground="#c3e6cb", highlightcolor="#c3e6cb", highlightthickness=1)
+    frame.pack(padx=10, pady=10)
+
+    label = tk.Label(frame, text="复制成功!", fg="#155724", bg="#d4edda", font=("Microsoft YaHei", 12))
+    label.pack(pady=5)
+
+    popup.after(1000, popup.destroy)  # Destroy the popup after 1 second
 
 root = tb.Window(themename="cosmo")  # 使用cosmo主题接近Fluent Design
 root.title("字符串Hash计算程序")
 root.geometry("600x600")
+
+style = tb.Style()
+style.configure('.', font=('Microsoft YaHei', 10))
 
 # 创建一个Frame来包含输入框和按钮
 frame = tb.Frame(root, padding="10")
@@ -93,7 +114,7 @@ entry_frame.pack(fill=tk.X, padx=10)
 
 # 输入框
 entry_var = tk.StringVar(value="输入字符串并计算hash")
-entry = tb.Entry(entry_frame, textvariable=entry_var, font=("Segoe UI", 12), width=40, bootstyle="light")
+entry = tb.Entry(entry_frame, textvariable=entry_var, font=("Microsoft YaHei", 12), width=40, bootstyle="light")
 entry.pack(side=tk.LEFT, padx=(5, 0), pady=5, fill=tk.BOTH, expand=True)
 
 # 绑定回车键事件
@@ -128,8 +149,7 @@ tree.tag_configure('even', background='#e9ecef')
 tree.pack(pady=(200, 0), padx=10, fill=tk.X)
 
 # 添加表格线样式
-style = tb.Style()
-style.configure('Treeview', rowheight=25, fieldbackground='white', background='white', font=('Segoe UI', 10))
+style.configure('Treeview', rowheight=25, fieldbackground='white', background='white', font=('Microsoft YaHei', 10))
 style.layout('Treeview.Item', [('Treeitem.padding', {'sticky': 'nswe'}), ('Treeitem.indicator', {'side': 'left', 'sticky': ''}), ('Treeitem.image', {'side': 'left', 'sticky': ''}), ('Treeitem.text', {'sticky': 'w'})])
 style.map('Treeview', background=[('selected', '#add8e6')])
 
