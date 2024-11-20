@@ -42,9 +42,9 @@ def copy_to_clipboard(item_id, column_id=None):
     if item_id:
         item_values = tree.item(item_id, 'values')
         if column_id is not None:
-            item_value = item_values[column_id]  # Adjust index to match column order
+            item_value = item_values[column_id]
         else:
-            item_value = '\t'.join(item_values)  # Join all columns if no specific column is selected
+            item_value = '\t'.join(item_values)
         root.clipboard_clear()
         root.clipboard_append(item_value)
         root.update()
@@ -56,9 +56,9 @@ def on_select(event):
         selected_item = tree.identify_row(event.y)
         selected_column = tree.identify_column(event.x)
         if selected_item and selected_column:
-            column_index = int(selected_column.lstrip('#')) - 1  # Convert column identifier to zero-based index
+            column_index = int(selected_column.lstrip('#')) - 1
             item_values = tree.item(selected_item, 'values')
-            item_value = item_values[column_index]  # Get the value of the selected cell
+            item_value = item_values[column_index]
             tree.selection_set(selected_item)
             tree.focus(selected_item)
             tree.see(selected_item)
@@ -73,7 +73,7 @@ def on_copy(event):
         if selected_items:
             item_id = selected_items[0]
             item_values = tree.item(item_id, 'values')
-            item_value = '\t'.join(item_values)  # Join all columns if multiple items are selected
+            item_value = '\t'.join(item_values)
             root.clipboard_clear()
             root.clipboard_append(item_value)
             root.update()
@@ -86,23 +86,21 @@ def show_success_popup():
     popup = tk.Toplevel(root)
     popup.title("Success")
     popup.geometry(f"+{root.winfo_x() + root.winfo_width() // 2 - 75}+{root.winfo_y() + root.winfo_height() // 2 - 25}")
-    popup.overrideredirect(True)  # Remove window decorations
-    popup.attributes('-alpha', 0.9)  # Set transparency
+    popup.overrideredirect(True)
+    popup.attributes('-alpha', 0.9)
 
     frame = tk.Frame(popup, bg="#d4edda", bd=1, relief="solid", highlightbackground="#c3e6cb", highlightcolor="#c3e6cb", highlightthickness=1)
     frame.pack(padx=10, pady=10)
 
-    label = tk.Label(frame, text="复制成功!", fg="#155724", bg="#d4edda", font=("Microsoft YaHei", 12))
+    label = tk.Label(frame, text="复制成功!", fg="#155724", bg="#d4edda", font=("Microsoft YaHei UI", 12))
     label.pack(pady=5)
 
-    popup.after(1000, popup.destroy)  # Destroy the popup after 1 second
+    popup.after(1000, popup.destroy)
 
-root = tb.Window(themename="cosmo")  # 使用cosmo主题接近Fluent Design
+# 创建窗口
+root = tb.Window(themename="cosmo")
 root.title("字符串Hash计算程序")
-root.geometry("600x600")
-
-style = tb.Style()
-style.configure('.', font=('Microsoft YaHei', 10))
+root.geometry("1200x700")
 
 # 创建一个Frame来包含输入框和按钮
 frame = tb.Frame(root, padding="10")
@@ -114,17 +112,14 @@ entry_frame.pack(fill=tk.X, padx=10)
 
 # 输入框
 entry_var = tk.StringVar(value="输入字符串并计算hash")
-entry = tb.Entry(entry_frame, textvariable=entry_var, font=("Microsoft YaHei", 12), width=40, bootstyle="light")
+entry = tb.Entry(entry_frame, textvariable=entry_var, font=("Microsoft YaHei UI", 12), width=40, bootstyle="light")
 entry.pack(side=tk.LEFT, padx=(5, 0), pady=5, fill=tk.BOTH, expand=True)
 
-# 绑定回车键事件
+# 计算
 entry.bind('<KeyPress>', on_entry_key_press)
-
-# 计算按钮
 button = tb.Button(entry_frame, text="计算", command=on_button_click, bootstyle="primary", width=5)
 button.pack(side=tk.RIGHT, padx=(0, 5), pady=5)
 
-# 绑定事件处理函数
 entry.bind('<FocusIn>', lambda event: entry_var.set('') if entry_var.get() == "输入字符串并计算hash" else None)
 entry.bind('<FocusOut>', lambda event: entry_var.set("输入字符串并计算hash") if not entry.get() else None)
 
@@ -135,10 +130,15 @@ tree.heading('result', text='结果', anchor=tk.CENTER)
 tree.heading('upper_result', text='大写结果', anchor=tk.CENTER)
 tree.heading('length', text='长度', anchor=tk.CENTER)
 
-tree.column('algorithm', width=100, anchor=tk.CENTER)
-tree.column('result', width=150, anchor=tk.CENTER)
-tree.column('upper_result', width=150, anchor=tk.CENTER)
-tree.column('length', width=50, anchor=tk.CENTER)
+# 计算可用宽度
+total_width = 1200 - 2 * 15  # 总宽度减去两边的15px
+remaining_width = total_width - 115 * 2  # 减去两个115px的列宽
+half_remaining_width = remaining_width // 2  # 剩余宽度的一半
+
+tree.column('algorithm', width=115, anchor=tk.CENTER)
+tree.column('result', width=half_remaining_width, anchor=tk.CENTER)
+tree.column('upper_result', width=half_remaining_width, anchor=tk.CENTER)
+tree.column('length', width=110, anchor=tk.CENTER)
 
 for i, algo in enumerate(['MD5', 'SHA-1', 'SHA-256', 'SHA-512', 'CRC32']):
     tree.insert('', 'end', values=(algo, '', '', ''), tags=('odd' if i % 2 else 'even'))
@@ -146,26 +146,21 @@ for i, algo in enumerate(['MD5', 'SHA-1', 'SHA-256', 'SHA-512', 'CRC32']):
 tree.tag_configure('odd', background='#f9f9f9')
 tree.tag_configure('even', background='#e9ecef')
 
-tree.pack(pady=(200, 0), padx=10, fill=tk.X)
+tree.pack(pady=(200, 0), padx=15, fill=tk.X)  # 设置左右padding为15px
 
-# 添加表格线样式
-style.configure('Treeview', rowheight=25, fieldbackground='white', background='white', font=('Microsoft YaHei', 10))
+# 样式配置
+style = tb.Style()
+style.configure('.', font=('Microsoft YaHei UI', 10))
+style.configure('Treeview', rowheight=25, fieldbackground='white', background='white', font=('Microsoft YaHei UI', 10))
 style.layout('Treeview.Item', [('Treeitem.padding', {'sticky': 'nswe'}), ('Treeitem.indicator', {'side': 'left', 'sticky': ''}), ('Treeitem.image', {'side': 'left', 'sticky': ''}), ('Treeitem.text', {'sticky': 'w'})])
 style.map('Treeview', background=[('selected', '#add8e6')])
-
-# 自定义样式以移除灰色底纹并添加圆角
 style.configure('TEntry', fieldbackground='white', bordercolor='transparent', lightcolor='transparent', darkcolor='transparent')
 style.map('TEntry', fieldbackground=[('focus', 'white')])
 style.configure('TButton', background='blue', foreground='white')
 
-# 绑定点击其他区域取消焦点
+# 复制结果
 root.bind("<Button-1>", clear_focus)
-
-
-# 左键点击选择单元格并复制内容
 tree.bind("<Button-1>", on_select)
-
-# 绑定 Control+C 复制选中的行内容
 root.bind("<Control-c>", on_copy)
 
 root.mainloop()
