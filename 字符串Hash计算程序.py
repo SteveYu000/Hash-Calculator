@@ -50,6 +50,22 @@ def copy_to_clipboard(item_id, column_id=None):
         root.update()
         show_success_popup()
 
+def on_hover(event):
+    region = tree.identify_region(event.x, event.y)
+    if region == "cell":
+        selected_item = tree.identify_row(event.y)
+        selected_column = tree.identify_column(event.x)
+        if selected_item and selected_column:
+            column_index = int(selected_column.lstrip('#')) - 1
+            item_values = tree.item(selected_item, 'values')
+            item_value = item_values[column_index]
+            schedule_tooltip(event, item_value)
+    else:
+        cancel_tooltip()
+
+def on_leave(event):
+    cancel_tooltip()
+
 def on_select(event):
     region = tree.identify_region(event.x, event.y)
     if region == "cell":
@@ -96,6 +112,36 @@ def show_success_popup():
     label.pack(pady=5)
 
     popup.after(1000, popup.destroy)
+
+def show_tooltip(event, text):
+    global tooltip
+    tooltip = tk.Toplevel(root)
+    tooltip.geometry(f"+{event.x_root+10}+{event.y_root+10}")
+    tooltip.overrideredirect(True)
+    tooltip.attributes('-alpha', 0.9)
+
+    label = tk.Label(tooltip, text=text, justify=tk.LEFT,
+                     background="#ffffe0", relief=tk.SOLID, borderwidth=1,
+                     font=("tahoma", "8", "normal"))
+    label.pack(ipadx=1)
+
+def hide_tooltip():
+    global tooltip
+    if tooltip:
+        tooltip.destroy()
+        tooltip = None
+
+def schedule_tooltip(event, text):
+    global hover_timer
+    cancel_tooltip()
+    hover_timer = root.after(1000, lambda: show_tooltip(event, text))
+
+def cancel_tooltip():
+    global hover_timer
+    if hover_timer:
+        root.after_cancel(hover_timer)
+        hover_timer = None
+    hide_tooltip()
 
 # 创建窗口
 root = tb.Window(themename="cosmo")
@@ -159,7 +205,11 @@ style.map('TEntry', fieldbackground=[('focus', 'white')])
 style.configure('TButton', background='blue', foreground='white')
 
 # 复制结果
+tooltip = None
+hover_timer = None
 root.bind("<Button-1>", clear_focus)
+tree.bind("<Motion>", on_hover)
+tree.bind("<Leave>", on_leave)
 tree.bind("<Button-1>", on_select)
 root.bind("<Control-c>", on_copy)
 
